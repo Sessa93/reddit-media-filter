@@ -52,6 +52,8 @@ src/content.css      the hiding rule
 popup/               toolbar popup
 icons/               on/off icons
 test/                unit tests + DOM fixture
+scripts/package.sh   builds the release zip
+.github/workflows/   CI: test, package, release
 ```
 
 ## Tests
@@ -69,3 +71,24 @@ python3 -m http.server 8765
 ```
 
 Then open <http://localhost:8765/test/fixture.html>. The green/red panel at the top checks every post's detected type and visibility. The buttons simulate toggling settings, infinite scroll, a lazily loaded GIF player, and navigating to a post page and back.
+
+## Packaging and releases
+
+```bash
+npm run package
+```
+
+builds `dist/reddit-media-filter-<version>.zip` with only the files the extension needs. It fails if the manifest points at a file that isn't in the zip. Chrome can't install the zip directly: unzip it and use **Load unpacked**, or upload it to the Chrome Web Store.
+
+The [Package workflow](.github/workflows/package.yml) runs the tests and builds the zip on every push to `main` and every pull request. Download the zip from the run's **Artifacts** section.
+
+To publish a release:
+
+1. Bump `version` in `manifest.json` and merge it to `main`.
+2. Tag that commit and push the tag:
+
+   ```bash
+   git tag v1.0.1 && git push origin v1.0.1
+   ```
+
+The workflow checks that the tag matches the manifest version, then creates a GitHub release with the zip attached.

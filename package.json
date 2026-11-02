@@ -4,6 +4,7 @@
   "private": true,
   "description": "Chrome/Vivaldi extension that shows only picture, GIF and video posts in Reddit feeds.",
   "scripts": {
-    "test": "node --test test/*.test.js"
+    "test": "node --test test/*.test.js",
+    "package": "scripts/package.sh"
   }
 }
