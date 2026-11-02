@@ -26,13 +26,19 @@
     return domains.some((d) => host === d || host.endsWith('.' + d));
   }
 
+  // Parses a URL, looking through Reddit's media viewer to the file it shows:
+  // reddit.com/media?url=https%3A%2F%2Fi.redd.it%2Fpic.gif -> i.redd.it/pic.gif
   function parseUrl(href) {
     if (!href) return null;
+    let url;
     try {
-      return new URL(href, 'https://www.reddit.com');
+      url = new URL(href, 'https://www.reddit.com');
     } catch {
       return null;
     }
+    const isViewer = url.pathname === '/media' && hostIn(url.hostname.toLowerCase(), ['reddit.com']);
+    const inner = isViewer && url.searchParams.get('url');
+    return inner ? parseUrl(inner) : url;
   }
 
   function isExcluded(href) {
@@ -43,8 +49,9 @@
   // Media kind implied by a URL alone, or null when the URL says nothing.
   function classifyUrl(href) {
     const url = parseUrl(href);
-    if (!url || isExcluded(href)) return null;
+    if (!url) return null;
     const host = url.hostname.toLowerCase();
+    if (hostIn(host, EXCLUDED_HOSTS)) return null;
     const ext = /\.([a-z0-9]+)$/i.exec(url.pathname)?.[1].toLowerCase();
 
     if (GIF_EXTENSIONS.has(ext) || hostIn(host, GIF_HOSTS)) return 'gif';
@@ -63,6 +70,7 @@
    * @param {string} [s.domain]     shreddit `domain` / old reddit `data-domain`
    * @param {boolean} [s.isSelf]    old reddit self (text) post
    * @param {boolean} [s.gifPlayer] a video player flagged as a GIF is in the post's media
+   * @param {boolean} [s.gifImage]  the post's main media image is a .gif
    * @param {boolean} [s.videoPlayer] a video player is in the post's media
    * @param {boolean} [s.gallery]   a gallery carousel is in the post's media
    * @param {boolean} [s.image]     a primary media image is in the post's media
@@ -75,6 +83,8 @@
     const fromUrl = classifyUrl(s.url) || (s.domain ? classifyUrl(`https://${s.domain}/`) : null);
 
     if (s.gifPlayer || fromUrl === 'gif') return 'gif';
+    // A gallery with one GIF among photos is still a gallery of pics.
+    if (s.gifImage && type !== 'gallery' && !s.gallery) return 'gif';
     if (type === 'image' || type === 'gallery') return 'image';
     if (type === 'video') return 'video';
     if (fromUrl) return fromUrl;

@@ -10,7 +10,9 @@
     'shreddit-player, shreddit-player-2, shreddit-player-static, shreddit-player-static-hlsjs';
   const KIND_ATTR = 'data-rmf-kind';
   const HIDDEN_ATTR = 'data-rmf-hidden';
-  const GIF_SRC = /\.gifv?(?:[?#]|$)/i;
+  const PRIMARY_IMAGE_SELECTOR = 'shreddit-media-lightbox-listener img, img[data-post-media-primary]';
+  // A .gif path inside a src or srcset, e.g. preview.redd.it/abc.gif?width=640&format=png8
+  const GIF_SRC = /\.gifv?(?:[?#\s,]|$)/i;
 
   let settings = { ...DEFAULTS };
   let ready = false;
@@ -47,6 +49,7 @@
 
     const media = post.querySelector('[slot="post-media-container"]');
     const players = media ? [...media.querySelectorAll(PLAYER_SELECTOR)] : [];
+    const images = media ? [...media.querySelectorAll(PRIMARY_IMAGE_SELECTOR)] : [];
     return {
       postType: post.getAttribute('post-type'),
       url: post.getAttribute('content-href'),
@@ -56,6 +59,9 @@
           p.hasAttribute('gif') ||
           GIF_SRC.test(p.getAttribute('src') || '') ||
           GIF_SRC.test(p.getAttribute('poster') || ''),
+      ),
+      gifImage: images.some((img) =>
+        ['src', 'srcset', 'data-lazy-src'].some((attr) => GIF_SRC.test(img.getAttribute(attr) || '')),
       ),
       videoPlayer: players.length > 0,
       gallery: Boolean(media?.querySelector('gallery-carousel')),

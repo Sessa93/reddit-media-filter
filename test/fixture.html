@@ -42,6 +42,13 @@
         <div slot="post-media-container"><shreddit-media-lightbox-listener><img data-post-media-primary alt="" /></shreddit-media-lightbox-listener></div>
       </shreddit-post></article><hr />
       <article><shreddit-post data-expect="gif" post-type="image" content-href="https://i.redd.it/bbb.gif" domain="i.redd.it">Uploaded GIF</shreddit-post></article><hr />
+      <article><shreddit-post data-expect="gif" post-type="image" content-href="https://www.reddit.com/media?url=https%3A%2F%2Fi.redd.it%2Fnnn.gif" domain="i.redd.it">GIF behind media-viewer link</shreddit-post></article><hr />
+      <article><shreddit-post data-expect="gif" post-type="image" content-href="https://www.reddit.com/r/gifs/comments/ooo/x/" domain="i.redd.it">GIF known only from its preview image
+        <div slot="post-media-container"><shreddit-media-lightbox-listener><img alt="" srcset="https://preview.redd.it/ooo.gif?width=320&amp;format=png8&amp;s=a 320w, https://preview.redd.it/ooo.gif?width=640&amp;format=png8&amp;s=b 640w" /></shreddit-media-lightbox-listener></div>
+      </shreddit-post></article><hr />
+      <article><shreddit-post data-expect="image" post-type="image" content-href="https://www.reddit.com/media?url=https%3A%2F%2Fi.redd.it%2Fppp.jpeg" domain="i.redd.it">Photo behind media-viewer link
+        <div slot="post-media-container"><shreddit-media-lightbox-listener><img alt="" src="https://preview.redd.it/ppp.jpeg?width=640&amp;s=c" /></shreddit-media-lightbox-listener></div>
+      </shreddit-post></article><hr />
       <article><shreddit-post data-expect="video" post-type="video" content-href="https://v.redd.it/ccc" domain="v.redd.it">Reddit video
         <div slot="post-media-container"><shreddit-async-loader bundlename="shreddit_player_2_loader"><shreddit-player-2 src="https://v.redd.it/ccc/HLSPlaylist.m3u8"></shreddit-player-2></shreddit-async-loader></div>
       </shreddit-post></article><hr />
