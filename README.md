@@ -26,10 +26,12 @@ Settings sync across browsers signed into the same profile (`chrome.storage.sync
 | Kind | Detected from |
 | --- | --- |
 | Pics | `post-type="image"` or `"gallery"`, `i.redd.it` / `preview.redd.it` / imgur / reddit gallery links, image file extensions |
-| GIFs | `.gif` / `.gifv` URLs, video players Reddit flags as GIFs (`shreddit-player-2[gif]`), redgifs / giphy / tenor / gfycat |
+| GIFs | `.gif` / `.gifv` URLs, video players Reddit flags as GIFs (`shreddit-player-2[gif]`), giphy / tenor / gfycat |
 | Vids | `post-type="video"`, `v.redd.it`, YouTube, Streamable, Vimeo, Twitch, TikTok and similar hosts, video file extensions |
 
 Anything else (text, link, unknown) is hidden while the filter is on.
+
+Redgifs posts never count as media: they're treated as plain links and hidden, even when Reddit plays them inline as GIFs or videos.
 
 ## Where it runs
 

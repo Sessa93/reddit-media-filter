@@ -18,7 +18,6 @@ test('classifyUrl recognises media hosts', () => {
   assert.equal(classifyUrl('https://m.youtube.com/watch?v=dQw4w9WgXcQ'), 'video');
   assert.equal(classifyUrl('https://youtu.be/dQw4w9WgXcQ'), 'video');
   assert.equal(classifyUrl('https://streamable.com/abc'), 'video');
-  assert.equal(classifyUrl('https://www.redgifs.com/watch/somegif'), 'gif');
   assert.equal(classifyUrl('https://giphy.com/gifs/abc'), 'gif');
   assert.equal(classifyUrl('https://imgur.com/a/album1'), 'image');
   assert.equal(classifyUrl('https://www.reddit.com/gallery/1abcde'), 'image');
@@ -45,6 +44,20 @@ test('shreddit posts classify from post-type and content-href', () => {
   assert.equal(classifyPost({ postType: 'link', url: 'https://www.youtube.com/watch?v=1' }), 'video');
   assert.equal(classifyPost({ postType: 'link', url: 'https://i.imgur.com/a.png' }), 'image');
   assert.equal(classifyPost({ postType: 'link', url: 'https://news.example.com/story' }), 'link');
+});
+
+test('redgifs is never media', () => {
+  assert.equal(classifyUrl('https://www.redgifs.com/watch/somegif'), null);
+  assert.equal(classifyUrl('https://media.redgifs.com/SomeGif.mp4'), null);
+  assert.equal(classifyUrl('https://www.gifdeliverynetwork.com/somegif'), null);
+
+  const watch = 'https://www.redgifs.com/watch/somegif';
+  assert.equal(classifyPost({ postType: 'link', url: watch }), 'link');
+  assert.equal(classifyPost({ postType: 'video', url: watch, videoPlayer: true }), 'link');
+  assert.equal(classifyPost({ postType: 'image', url: watch, gifPlayer: true }), 'link');
+  assert.equal(classifyPost({ url: 'https://media.redgifs.com/SomeGif.mp4' }), 'link');
+  // Old reddit: only the domain may say redgifs.
+  assert.equal(classifyPost({ postType: 'link', url: '/r/x/comments/1a/t/', domain: 'v3.redgifs.com' }), 'link');
 });
 
 test('link posts with a preview image stay links', () => {

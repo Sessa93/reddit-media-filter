@@ -75,6 +75,7 @@
       <div class="thing link" data-expect="gif" data-url="https://i.imgur.com/lll.gifv" data-domain="i.imgur.com">Old imgur gifv</div>
       <div class="thing link" data-expect="image" data-is-gallery="true" data-url="https://www.reddit.com/gallery/mmm" data-domain="reddit.com">Old gallery</div>
       <div class="thing link" data-expect="link" data-url="https://news.example.com/old" data-domain="news.example.com">Old link</div>
+      <div class="thing link" data-expect="link" data-url="https://www.redgifs.com/watch/oldgif" data-domain="redgifs.com">Old redgifs (excluded) <span class="expando-button video"></span></div>
     </div>
 
     <script>
@@ -132,7 +133,10 @@
         document.getElementById('feed-list').insertAdjacentHTML('beforeend', `
           <article><shreddit-post data-expect="image" post-type="image" content-href="https://i.redd.it/more${batch}.png" domain="i.redd.it">Loaded image ${batch}</shreddit-post></article><hr />
           <article><shreddit-post data-expect="text" post-type="text" content-href="https://www.reddit.com/r/x/comments/more${batch}/" domain="self.x">Loaded text ${batch}</shreddit-post></article><hr />
-          <article><shreddit-post data-expect="gif" post-type="link" content-href="https://www.redgifs.com/watch/more${batch}" domain="redgifs.com">Loaded redgif ${batch}</shreddit-post></article><hr />`);
+          <article><shreddit-post data-expect="gif" post-type="link" content-href="https://giphy.com/gifs/more${batch}" domain="giphy.com">Loaded giphy ${batch}</shreddit-post></article><hr />
+          <article><shreddit-post data-expect="link" post-type="video" content-href="https://www.redgifs.com/watch/more${batch}" domain="redgifs.com">Loaded redgif ${batch} (excluded)
+            <div slot="post-media-container"><shreddit-player-2 gif src="https://media.redgifs.com/More${batch}.mp4"></shreddit-player-2></div>
+          </shreddit-post></article><hr />`);
         rmfCheck();
       });
 

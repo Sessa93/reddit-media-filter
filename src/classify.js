@@ -9,7 +9,7 @@
     'jpg', 'jpeg', 'png', 'webp', 'avif', 'bmp', 'heic', 'heif', 'tif', 'tiff',
   ]);
 
-  const GIF_HOSTS = ['redgifs.com', 'gfycat.com', 'giphy.com', 'tenor.com', 'gifdeliverynetwork.com'];
+  const GIF_HOSTS = ['gfycat.com', 'giphy.com', 'tenor.com'];
   const VIDEO_HOSTS = [
     'v.redd.it', 'youtube.com', 'youtu.be', 'youtube-nocookie.com', 'streamable.com',
     'vimeo.com', 'twitch.tv', 'tiktok.com', 'dailymotion.com', 'dai.ly', 'streamff.com',
@@ -19,20 +19,31 @@
     'i.redd.it', 'preview.redd.it', 'imgur.com', 'flickr.com', 'staticflickr.com',
     'ibb.co', 'imgbb.com', 'postimg.cc',
   ];
+  // Never counted as media, whatever the post type or player says.
+  const EXCLUDED_HOSTS = ['redgifs.com', 'gifdeliverynetwork.com'];
 
   function hostIn(host, domains) {
     return domains.some((d) => host === d || host.endsWith('.' + d));
   }
 
-  // Media kind implied by a URL alone, or null when the URL says nothing.
-  function classifyUrl(href) {
+  function parseUrl(href) {
     if (!href) return null;
-    let url;
     try {
-      url = new URL(href, 'https://www.reddit.com');
+      return new URL(href, 'https://www.reddit.com');
     } catch {
       return null;
     }
+  }
+
+  function isExcluded(href) {
+    const url = parseUrl(href);
+    return Boolean(url && hostIn(url.hostname.toLowerCase(), EXCLUDED_HOSTS));
+  }
+
+  // Media kind implied by a URL alone, or null when the URL says nothing.
+  function classifyUrl(href) {
+    const url = parseUrl(href);
+    if (!url || isExcluded(href)) return null;
     const host = url.hostname.toLowerCase();
     const ext = /\.([a-z0-9]+)$/i.exec(url.pathname)?.[1].toLowerCase();
 
@@ -59,6 +70,7 @@
   function classifyPost(s) {
     const type = (s.postType || '').toLowerCase();
     if (s.isSelf || type === 'text' || type === 'self') return 'text';
+    if (isExcluded(s.url) || (s.domain && isExcluded(`https://${s.domain}/`))) return 'link';
 
     const fromUrl = classifyUrl(s.url) || (s.domain ? classifyUrl(`https://${s.domain}/`) : null);
 
