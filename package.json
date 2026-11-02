@@ -1,0 +1,9 @@
+{
+  "name": "reddit-media-filter",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Chrome/Vivaldi extension that shows only picture, GIF and video posts in Reddit feeds.",
+  "scripts": {
+    "test": "node --test test/*.test.js"
+  }
+}

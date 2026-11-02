@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Reddit Media Filter fixture</title>
+    <link rel="stylesheet" href="../src/content.css" />
+    <style>
+      body { margin: 16px; max-width: 760px; font: 14px/1.4 system-ui, sans-serif; }
+      shreddit-post, shreddit-ad-post, article, shreddit-feed { display: block; }
+      shreddit-post, shreddit-ad-post, .thing { margin: 4px 0; padding: 6px 8px; border: 1px solid #ccc; border-radius: 6px; }
+      shreddit-post shreddit-post { margin-top: 6px; border-style: dashed; }
+      .thing { border-style: dotted; }
+      hr { border: 0; border-top: 1px solid #eee; }
+      #controls { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; margin-bottom: 8px; }
+      #results { padding: 8px 10px; border-radius: 6px; background: #f4f5f6; white-space: pre-wrap; font: 12px/1.4 ui-monospace, monospace; }
+      #results.pass { background: #e6f4ea; }
+      #results.fail { background: #fce8e6; }
+    </style>
+    <!-- Same load order as the manifest, at document_start. -->
+    <script src="chrome-shim.js"></script>
+    <script src="../src/settings.js"></script>
+    <script src="../src/classify.js"></script>
+    <script src="../src/content.js"></script>
+  </head>
+  <body>
+    <h1>Reddit Media Filter fixture</h1>
+    <div id="controls">
+      <label><input type="checkbox" data-key="enabled" checked /> Enabled</label>
+      <label><input type="checkbox" data-key="showImage" checked /> Pics</label>
+      <label><input type="checkbox" data-key="showGif" checked /> GIFs</label>
+      <label><input type="checkbox" data-key="showVideo" checked /> Vids</label>
+      <button id="more">Load more</button>
+      <button id="lazy">Lazy-load GIF player</button>
+      <button id="postpage">Open post page</button>
+      <button id="feed">Back to feed</button>
+    </div>
+    <div id="results">Running…</div>
+
+    <h2>Shreddit feed</h2>
+    <shreddit-feed id="feed-list">
+      <article><shreddit-post data-expect="image" post-type="image" content-href="https://i.redd.it/aaa.jpeg" domain="i.redd.it">Image post
+        <div slot="post-media-container"><shreddit-media-lightbox-listener><img data-post-media-primary alt="" /></shreddit-media-lightbox-listener></div>
+      </shreddit-post></article><hr />
+      <article><shreddit-post data-expect="gif" post-type="image" content-href="https://i.redd.it/bbb.gif" domain="i.redd.it">Uploaded GIF</shreddit-post></article><hr />
+      <article><shreddit-post data-expect="video" post-type="video" content-href="https://v.redd.it/ccc" domain="v.redd.it">Reddit video
+        <div slot="post-media-container"><shreddit-async-loader bundlename="shreddit_player_2_loader"><shreddit-player-2 src="https://v.redd.it/ccc/HLSPlaylist.m3u8"></shreddit-player-2></shreddit-async-loader></div>
+      </shreddit-post></article><hr />
+      <article><shreddit-post data-expect="gif" post-type="video" content-href="https://v.redd.it/ddd" domain="v.redd.it">GIF-style video
+        <div slot="post-media-container"><shreddit-player-2 gif src="https://v.redd.it/ddd/HLSPlaylist.m3u8"></shreddit-player-2></div>
+      </shreddit-post></article><hr />
+      <article><shreddit-post data-expect="image" post-type="gallery" content-href="https://www.reddit.com/gallery/eee" domain="reddit.com">Gallery
+        <div slot="post-media-container"><gallery-carousel><ul><li><img alt="" /></li></ul></gallery-carousel></div>
+      </shreddit-post></article><hr />
+      <article><shreddit-post data-expect="text" post-type="text" content-href="https://www.reddit.com/r/AskReddit/comments/fff/q/" domain="self.AskReddit">Text post</shreddit-post></article><hr />
+      <article><shreddit-post data-expect="link" post-type="link" content-href="https://news.example.com/story" domain="news.example.com">News link
+        <div slot="post-media-container"><img alt="link preview" /></div>
+      </shreddit-post></article><hr />
+      <article><shreddit-post data-expect="video" post-type="link" content-href="https://www.youtube.com/watch?v=abc" domain="youtube.com">YouTube link</shreddit-post></article><hr />
+      <article><shreddit-post data-expect="video" post-type="crosspost" content-href="https://www.reddit.com/r/videos/comments/ggg/x/" domain="self.videos">Crosspost of a video
+        <shreddit-post post-type="video" content-href="https://v.redd.it/ggg" domain="v.redd.it">Original
+          <div slot="post-media-container"><shreddit-player-2 src="https://v.redd.it/ggg/HLSPlaylist.m3u8"></shreddit-player-2></div>
+        </shreddit-post>
+      </shreddit-post></article><hr />
+      <article><shreddit-ad-post data-expect="link" post-type="link" content-href="https://shop.example.com/" domain="shop.example.com">Promoted</shreddit-ad-post></article><hr />
+      <article><shreddit-post id="lazy-post" data-expect="video" post-type="video" content-href="https://v.redd.it/hhh" domain="v.redd.it">Video whose player loads later
+        <div slot="post-media-container"><shreddit-async-loader bundlename="shreddit_player_2_loader"></shreddit-async-loader></div>
+      </shreddit-post></article><hr />
+    </shreddit-feed>
+
+    <h2>Old reddit</h2>
+    <div id="siteTable">
+      <div class="thing link" data-expect="image" data-url="https://i.redd.it/iii.png" data-domain="i.redd.it">Old image</div>
+      <div class="thing link self" data-expect="text" data-url="/r/AskReddit/comments/jjj/q/" data-domain="self.AskReddit">Old self post</div>
+      <div class="thing link" data-expect="video" data-url="https://v.redd.it/kkk" data-domain="v.redd.it">Old video <span class="expando-button video"></span></div>
+      <div class="thing link" data-expect="gif" data-url="https://i.imgur.com/lll.gifv" data-domain="i.imgur.com">Old imgur gifv</div>
+      <div class="thing link" data-expect="image" data-is-gallery="true" data-url="https://www.reddit.com/gallery/mmm" data-domain="reddit.com">Old gallery</div>
+      <div class="thing link" data-expect="link" data-url="https://news.example.com/old" data-domain="news.example.com">Old link</div>
+    </div>
+
+    <script>
+      const SHOW_KEYS = { image: 'showImage', gif: 'showGif', video: 'showVideo' };
+      const controls = [...document.querySelectorAll('#controls input')];
+      const results = document.getElementById('results');
+      const feedPath = location.pathname;
+      const current = () => Object.fromEntries(controls.map((c) => [c.dataset.key, c.checked]));
+
+      function targetOf(post) {
+        const article = post.closest('article');
+        return article && !post.classList.contains('thing') ? article : post;
+      }
+
+      // Compare every post's kind and visibility with what the settings imply.
+      window.rmfCheck = async function () {
+        await new Promise((r) => setTimeout(r, 60));
+        await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+        const s = current();
+        const postPage = location.pathname.includes('/comments/');
+        const failures = [];
+        const posts = [...document.querySelectorAll('[data-expect]')];
+        for (const post of posts) {
+          const label = post.firstChild.textContent.trim();
+          const kind = post.getAttribute('data-rmf-kind');
+          const shouldHide = s.enabled && !postPage && !s[SHOW_KEYS[post.dataset.expect]];
+          const isHidden = targetOf(post).hasAttribute('data-rmf-hidden');
+          if (kind !== post.dataset.expect) failures.push(`${label}: kind ${kind}, expected ${post.dataset.expect}`);
+          if (isHidden !== shouldHide) failures.push(`${label}: hidden=${isHidden}, expected ${shouldHide}`);
+          const hr = targetOf(post).nextElementSibling;
+          if (hr?.tagName === 'HR' && hr.hasAttribute('data-rmf-hidden') !== shouldHide) failures.push(`${label}: divider out of sync`);
+        }
+        const nested = document.querySelectorAll('shreddit-post shreddit-post[data-rmf-kind]').length;
+        if (nested) failures.push(`${nested} nested post(s) were classified on their own`);
+        const stats = await rmfRequestStats();
+        const expectedHidden = posts.filter((p) => targetOf(p).hasAttribute('data-rmf-hidden')).length;
+        if (stats.hidden !== expectedHidden || window.rmfBadge !== expectedHidden) {
+          failures.push(`stats/badge hidden=${stats.hidden}/${window.rmfBadge}, expected ${expectedHidden}`);
+        }
+        const summary = `${posts.length} posts · ${stats.hidden} hidden · settings ${JSON.stringify(s)} · path ${location.pathname}`;
+        results.className = failures.length ? 'fail' : 'pass';
+        results.textContent = (failures.length ? `FAIL\n${failures.join('\n')}` : 'PASS') + `\n${summary}`;
+        return { pass: !failures.length, failures, stats };
+      };
+
+      controls.forEach((c) => c.addEventListener('change', async () => {
+        await chrome.storage.sync.set({ [c.dataset.key]: c.checked });
+        rmfCheck();
+      }));
+
+      let batch = 0;
+      document.getElementById('more').addEventListener('click', () => {
+        batch++;
+        // Shreddit appends whole <article> + <hr> pairs when you scroll.
+        document.getElementById('feed-list').insertAdjacentHTML('beforeend', `
+          <article><shreddit-post data-expect="image" post-type="image" content-href="https://i.redd.it/more${batch}.png" domain="i.redd.it">Loaded image ${batch}</shreddit-post></article><hr />
+          <article><shreddit-post data-expect="text" post-type="text" content-href="https://www.reddit.com/r/x/comments/more${batch}/" domain="self.x">Loaded text ${batch}</shreddit-post></article><hr />
+          <article><shreddit-post data-expect="gif" post-type="link" content-href="https://www.redgifs.com/watch/more${batch}" domain="redgifs.com">Loaded redgif ${batch}</shreddit-post></article><hr />`);
+        rmfCheck();
+      });
+
+      document.getElementById('lazy').addEventListener('click', () => {
+        const post = document.getElementById('lazy-post');
+        post.dataset.expect = 'gif';
+        post.querySelector('shreddit-async-loader').innerHTML = '<shreddit-player-2 gif src="https://v.redd.it/hhh/x.m3u8"></shreddit-player-2>';
+        rmfCheck();
+      });
+
+      document.getElementById('postpage').addEventListener('click', () => {
+        history.pushState(null, '', '/r/pics/comments/abc/some_post/');
+        document.body.append(document.createElement('span')); // client-side routing always touches the DOM
+        rmfCheck();
+      });
+
+      document.getElementById('feed').addEventListener('click', () => {
+        history.pushState(null, '', feedPath);
+        document.body.append(document.createElement('span'));
+        rmfCheck();
+      });
+
+      rmfCheck();
+    </script>
+  </body>
+</html>
