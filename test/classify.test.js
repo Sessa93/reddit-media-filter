@@ -23,6 +23,17 @@ test('classifyUrl recognises media hosts', () => {
   assert.equal(classifyUrl('https://www.reddit.com/gallery/1abcde'), 'image');
 });
 
+test("classifyUrl looks through Reddit's media viewer links", () => {
+  const viewer = (file) => `https://www.reddit.com/media?url=${encodeURIComponent(file)}`;
+  assert.equal(classifyUrl(viewer('https://i.redd.it/pic.gif')), 'gif');
+  assert.equal(classifyUrl(viewer('https://i.redd.it/pic.jpeg')), 'image');
+  assert.equal(classifyUrl(viewer('https://i.redd.it/pic.mp4')), 'video');
+  assert.equal(classifyUrl('/media?url=https%3A%2F%2Fi.redd.it%2Fpic.gif'), 'gif');
+  assert.equal(classifyUrl(viewer('https://www.redgifs.com/watch/x')), null);
+  assert.equal(classifyUrl('https://www.reddit.com/media'), null);
+  assert.equal(classifyUrl('https://example.com/media?url=https%3A%2F%2Fi.redd.it%2Fpic.gif'), null);
+});
+
 test('classifyUrl returns null for non-media and junk', () => {
   assert.equal(classifyUrl('https://www.reddit.com/r/pics/comments/1abc/title/'), null);
   assert.equal(classifyUrl('/r/AskReddit/comments/1abc/title/'), null);
@@ -40,6 +51,8 @@ test('shreddit posts classify from post-type and content-href', () => {
   assert.equal(classifyPost({ postType: 'gallery', url: 'https://www.reddit.com/gallery/1a' }), 'image');
   assert.equal(classifyPost({ postType: 'video', url: 'https://v.redd.it/a' }), 'video');
   assert.equal(classifyPost({ postType: 'video', url: 'https://v.redd.it/a', gifPlayer: true }), 'gif');
+  const viewerGif = 'https://www.reddit.com/media?url=https%3A%2F%2Fi.redd.it%2Fpic.gif';
+  assert.equal(classifyPost({ postType: 'image', url: viewerGif, domain: 'i.redd.it' }), 'gif');
   assert.equal(classifyPost({ postType: 'text', url: '/r/x/comments/1a/t/' }), 'text');
   assert.equal(classifyPost({ postType: 'link', url: 'https://www.youtube.com/watch?v=1' }), 'video');
   assert.equal(classifyPost({ postType: 'link', url: 'https://i.imgur.com/a.png' }), 'image');
@@ -58,6 +71,16 @@ test('redgifs is never media', () => {
   assert.equal(classifyPost({ url: 'https://media.redgifs.com/SomeGif.mp4' }), 'link');
   // Old reddit: only the domain may say redgifs.
   assert.equal(classifyPost({ postType: 'link', url: '/r/x/comments/1a/t/', domain: 'v3.redgifs.com' }), 'link');
+});
+
+test('image posts whose main image is a .gif are GIFs', () => {
+  const permalink = 'https://www.reddit.com/r/gifs/comments/1a/t/';
+  assert.equal(classifyPost({ postType: 'image', url: permalink, domain: 'i.redd.it', gifImage: true }), 'gif');
+  assert.equal(classifyPost({ postType: 'image', url: permalink, domain: 'i.redd.it' }), 'image');
+  // One GIF in a gallery of photos keeps it a gallery of pics.
+  assert.equal(classifyPost({ postType: 'gallery', url: 'https://www.reddit.com/gallery/1a', gifImage: true }), 'image');
+  assert.equal(classifyPost({ postType: 'crosspost', url: permalink, gallery: true, gifImage: true }), 'image');
+  assert.equal(classifyPost({ postType: 'text', gifImage: true }), 'text');
 });
 
 test('link posts with a preview image stay links', () => {
